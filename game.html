@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>لا تلمسني!</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #ff0000;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+      font-family: 'Arial', sans-serif;
+      touch-action: none; /* منع السحب غير المرغوب فيه */
+    }
+
+    #circle {
+      width: 25vw; /* 25% من عرض الشاشة */
+      height: 25vw; /* 25% من ارتفاع الشاشة */
+      max-width: 150px; /* الحد الأقصى للحجم */
+      max-height: 150px; /* الحد الأقصى للحجم */
+      background-color: white;
+      border-radius: 50%;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 4vw; /* حجم الخط بالنسبة المئوية */
+      cursor: pointer;
+      user-select: none;
+      transition: top 0.3s, left 0.3s, width 0.3s, height 0.3s, border-radius 0.3s, font-size 0.3s;
+      z-index: 1;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    #glitch-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      z-index: 9999;
+      color: #0f0;
+      font-size: 5vw; /* حجم الخط يتغير بناءً على حجم الشاشة */
+      text-align: center;
+      animation: glitch 0.5s infinite;
+    }
+
+    @keyframes glitch {
+      0% { text-shadow: 3px 0 #f00; }
+      25% { text-shadow: -3px 0 #00f; }
+      50% { transform: translateX(5px); }
+      75% { transform: translateX(-5px); }
+      100% { filter: hue-rotate(30deg); }
+    }
+
+    #glitch-img {
+      max-width: 80%;
+      max-height: 60%;
+      object-fit: contain;
+      animation: glitch-img 1s infinite;
+    }
+
+    @keyframes glitch-img {
+      0% { filter: hue-rotate(0deg); }
+      50% { filter: hue-rotate(180deg) brightness(2); }
+      100% { filter: hue-rotate(360deg); }
+    }
+
+    #timer {
+      font-size: 2rem;
+      margin-top: 20px;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div id="circle">لا تلمسني!</div>
+
+  <div id="glitch-screen">
+    <img id="glitch-img" src="https://media.giphy.com/media/26n79xtqzqDi40kfu/giphy.gif" alt="Glitch Effect">
+    <div>!خطأ في النظام</div>
+    <div id="timer"></div>
+  </div>
+
+  <audio id="glitch-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-explosion-2759.mp3"></audio>
+
+  <script>
+    const circle = document.getElementById("circle");
+    const glitch = document.getElementById("glitch-screen");
+    const timer = document.getElementById("timer");
+    const glitchSound = document.getElementById("glitch-sound");
+
+    function moveCircleRandomly() {
+      const maxX = window.innerWidth - 200; // مع أخذ الحجم بعين الاعتبار
+      const maxY = window.innerHeight - 200;
+      const newX = Math.random() * maxX;
+      const newY = Math.random() * maxY;
+
+      const newSize = 100 + Math.random() * 100; // من 100px إلى 200px
+      const isCircle = Math.random() > 0.3; // 70% احتمال أن تبقى دائرة
+
+      circle.style.left = `${newX}px`;
+      circle.style.top = `${newY}px`;
+      circle.style.width = `${newSize}px`;
+      circle.style.height = `${newSize}px`;
+      circle.style.borderRadius = isCircle ? "50%" : "20%";
+      circle.style.fontSize = `${Math.max(16, newSize / 7)}px`;
+    }
+
+    let moveInterval = setInterval(moveCircleRandomly, 800);
+
+    function triggerGlitch() {
+      clearInterval(moveInterval);
+      circle.style.display = "none";
+      glitch.style.display = "flex";
+      document.body.style.pointerEvents = "none";
+      glitchSound.currentTime = 0;
+      glitchSound.play();
+      
+      let seconds = 10;
+      timer.textContent = `يعود خلال: ${seconds} ثانية`;
+      
+      const countdown = setInterval(() => {
+        seconds--;
+        timer.textContent = `يعود خلال: ${seconds} ثانية`;
+        
+        if(seconds <= 0) {
+          clearInterval(countdown);
+          glitch.style.display = "none";
+          circle.style.display = "flex";
+          document.body.style.pointerEvents = "auto";
+          moveInterval = setInterval(moveCircleRandomly, 800);
+        }
+      }, 1000);
+    }
+
+    circle.addEventListener("click", triggerGlitch);
+    circle.addEventListener("touchstart", triggerGlitch);
+    circle.addEventListener("mouseover", moveCircleRandomly);
+  </script>
+</body>
+</html>
